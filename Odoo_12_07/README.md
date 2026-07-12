@@ -1,44 +1,131 @@
 # TransitOps – Smart Transport Operations Platform
 ### Enterprise-Grade Transport Operations ERP System
+> Built in 8 hours at Odoo Hackathon
 
-TransitOps is a full-stack ERP solution for managing fleet operations, dispatcher workflows, driver scheduling, safety compliance, fuel tracking, maintenance lifecycles, and financial analytics — all in one platform.
+---
 
-Built with a **Kinetic Precision** dark theme (slate-indigo with gold and emerald accents), it provides fleet command centers with a high-density, performant interface.
+## Steps to Run
+
+### Prerequisites
+- Node.js v18 or higher
+- npm
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Start the development server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+> The database (`db-storage.json`) is auto-created and seeded with demo data on first run. No database setup required.
+
+### Demo Login Credentials
+
+| Role | Email | Password |
+|---|---|---|
+| Fleet Manager | manager@transitops.com | Manager@123 |
+| Dispatcher | dispatcher@transitops.com | Dispatcher@123 |
+| Safety Officer | safety@transitops.com | Safety@123 |
+| Financial Analyst | finance@transitops.com | Finance@123 |
+
+---
+
+## Problem Statement
+
+Many logistics companies still rely on spreadsheets and manual logbooks to manage their transport operations. This leads to:
+
+- Scheduling conflicts from double-assigning vehicles or drivers
+- Underutilized vehicles with no visibility into fleet status
+- Missed maintenance causing breakdowns and safety risks
+- Expired driver licenses going unnoticed until it's too late
+- Inaccurate expense tracking with no per-vehicle cost breakdown
+- Poor operational visibility with no real-time KPIs or analytics
+
+**TransitOps** solves this by providing a centralized platform that manages the complete lifecycle of transport operations — from vehicle registration and driver management to dispatching, maintenance, fuel logging, and financial analytics — all with enforced business rules and automated status transitions.
+
+---
+
+## Target Users
+
+| Role | Responsibilities |
+|---|---|
+| **Fleet Manager** | Oversees fleet assets, maintenance, vehicle lifecycle, and operational efficiency |
+| **Dispatcher** | Creates trips, assigns vehicles and drivers, monitors active deliveries |
+| **Safety Officer** | Ensures driver compliance, tracks license validity, monitors safety scores |
+| **Financial Analyst** | Reviews operational expenses, fuel consumption, maintenance costs, and profitability |
 
 ---
 
 ## Features
 
-### Role-Based Access Control (RBAC)
-Four distinct roles with scoped permissions:
-- **Fleet Manager** — Full access: users, vehicles, drivers, trips, maintenance, billing, settings, audit logs
-- **Dispatcher** — Manage and dispatch trips, view vehicles and drivers
-- **Safety Officer** — Monitor drivers, manage maintenance, cancel trips
-- **Financial Analyst** — View trips, fuel logs, and expense analytics
-
 ### Modules
 
 | Module | Description |
 |---|---|
-| **Dashboard** | Live KPI cards — active trips, available vehicles, drivers on duty, monthly revenue |
-| **Fleet Management** | Vehicle registry with CRUD, odometer tracking, insurance/fitness expiry alerts |
+| **Dashboard** | Live KPI cards — active vehicles, available vehicles, vehicles in maintenance, active trips, pending trips, drivers on duty, fleet utilization % |
+| **Fleet Management** | Vehicle registry with CRUD, odometer tracking, insurance/fitness expiry alerts, status management |
 | **Driver Management** | Driver profiles, license expiry warnings, safety scores, certification tracking |
 | **Trip Dispatch Board** | Kanban-style board — create, dispatch, complete, and cancel trips with full guard validation |
-| **Maintenance** | Log vehicles into workshop, track service type, cost, technician, and close tickets |
-| **Billing & Fuel** | Fuel log auditing, peripheral expense tracking (tolls, parking, misc), financial analytics |
+| **Maintenance** | Log vehicles into workshop, track service type, cost, technician; closing ticket restores vehicle to Available |
+| **Billing & Fuel** | Fuel log auditing, peripheral expense tracking (tolls, parking, misc), per-vehicle operational cost, Vehicle ROI analytics |
 | **User Management** | Create/edit/deactivate users, reset passwords (Fleet Manager only) |
 | **Notifications** | Real-time system alerts for trip events, maintenance, and fleet changes |
 | **Audit Logs** | Full action history with user, role, and timestamp (Fleet Manager only) |
 | **Settings** | Configure fuel rate, MPG targets, cargo weight limits, freight revenue per mile |
 
-### Trip Dispatch Guards
-When dispatching a trip, the system enforces:
-1. Vehicle must be `AVAILABLE` (not `ON_TRIP` or `IN_SHOP`)
-2. Driver must be `AVAILABLE` (not `ON_TRIP` or `SUSPENDED`)
-3. Driver license must not be expired
-4. Cargo weight must not exceed vehicle capacity
+### Business Rules Enforced
 
-On dispatch, vehicle and driver are atomically set to `ON_TRIP`. On completion, odometer is auto-incremented by trip distance.
+- Vehicle registration number must be unique
+- `Retired` or `In Shop` vehicles never appear in dispatch selection
+- Drivers with expired licenses or `Suspended` status cannot be assigned to trips
+- A driver or vehicle already `On Trip` cannot be assigned to another trip
+- Cargo weight must not exceed the vehicle's maximum load capacity
+- Dispatching a trip automatically sets both vehicle and driver to `On Trip`
+- Completing a trip automatically sets both vehicle and driver back to `Available`
+- Cancelling a dispatched trip restores vehicle and driver to `Available`
+- Creating a maintenance record automatically sets vehicle status to `In Shop`
+- Closing maintenance restores vehicle to `Available`
+
+### Trip Lifecycle
+
+```
+DRAFT → DISPATCHED → COMPLETED
+                  ↘ CANCELLED
+```
+
+### Analytics & Reports
+- Fuel Efficiency (Distance / Fuel)
+- Fleet Utilization %
+- Operational Cost per vehicle (Fuel + Maintenance)
+- Vehicle ROI: `(Revenue - (Maintenance + Fuel)) / Acquisition Cost`
+- CSV export support
+
+### Bonus Features Implemented
+- Charts and visual analytics on dashboard
+- Dark mode (Kinetic Precision theme — slate-indigo with gold and emerald accents)
+- Search, filters, and sorting across all modules
+- Notification system for fleet events
+
+---
+
+## Example Workflow
+
+1. Register vehicle `Van-05` with max capacity 500 kg → Status: `Available`
+2. Register driver `Alex` with a valid license → Status: `Available`
+3. Create a trip with Cargo Weight = 450 kg → Status: `Draft`
+4. System validates 450 kg ≤ 500 kg and allows dispatch
+5. Dispatch trip → Vehicle and Driver status become `On Trip`
+6. Complete the trip → System marks both as `Available`, odometer auto-updated
+7. Create a maintenance record (e.g., Oil Change) → Vehicle status becomes `In Shop`, hidden from dispatch
+8. Close maintenance → Vehicle restored to `Available`
+9. Reports update operational cost and fuel efficiency based on latest trip and fuel log
 
 ---
 
@@ -51,7 +138,6 @@ On dispatch, vehicle and driver are atomically set to `ON_TRIP`. On completion, 
 | Auth | JWT (15min access token) + Refresh Token (7 days), bcrypt password hashing |
 | Database | JSON file-based storage (`db-storage.json`) — no external DB required |
 | Runtime | tsx (TypeScript execution), Vite (HMR dev server) |
-| AI Layer | Google Gemini API (optional, for report generation) |
 
 ---
 
@@ -91,58 +177,6 @@ On dispatch, vehicle and driver are atomically set to `ON_TRIP`. On completion, 
     └── server/
         └── db.ts           # JSON file database engine with auto-seeding
 ```
-
----
-
-## Steps to Run
-
-### Prerequisites
-- Node.js v18 or higher
-- npm
-
-### 1. Clone and install dependencies
-
-```bash
-git clone <repo-url>
-cd Odoo_12_07
-npm install
-```
-
-### 2. Set up environment variables (optional)
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your Gemini API key if you want AI features:
-
-```env
-GEMINI_API_KEY="your_gemini_api_key_here"
-APP_URL="http://localhost:3000"
-```
-
-> The app runs fine without a `.env` file. JWT secrets fall back to built-in defaults for local development.
-
-### 3. Start the development server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-> The database (`db-storage.json`) is auto-created and seeded with demo data on first run. No database setup required.
-
----
-
-## Demo Login Credentials
-
-| Role | Email | Password |
-|---|---|---|
-| Fleet Manager | manager@transitops.com | Manager@123 |
-| Dispatcher | dispatcher@transitops.com | Dispatcher@123 |
-| Safety Officer | safety@transitops.com | Safety@123 |
-| Financial Analyst | finance@transitops.com | Finance@123 |
 
 ---
 
