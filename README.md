@@ -64,14 +64,5 @@ Closing maintenance restores vehicle to Available
 Trip Lifecycle
 DRAFT → DISPATCHED → COMPLETED
                   ↘ CANCELLED
-Analytics & Reports
-Fuel Efficiency (Distance / Fuel)
-Fleet Utilization %
-Operational Cost per vehicle (Fuel + Maintenance)
-Vehicle ROI: (Revenue - (Maintenance + Fuel)) / Acquisition Cost
-CSV export support
-Bonus Features Implemented
-Charts and visual analytics on dashboard
-Dark mode (Kinetic Precision theme — slate-indigo with gold and emerald accents)
-Search, filters, and sorting across all modules
-Notification system for fleet events
+
+
