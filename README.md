@@ -29,7 +29,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### Demo Login Credentials
 
 | Role | Email | Password |
-|---|---|---|
+|---|---|---|    
 | Fleet Manager | manager@transitops.com | Manager@123 |
 | Dispatcher | dispatcher@transitops.com | Dispatcher@123 |
 | Safety Officer | safety@transitops.com | Safety@123 |
